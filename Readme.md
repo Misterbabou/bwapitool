@@ -9,18 +9,18 @@
 
 BWPITOOL brings a secure docker container to host you bitwarden CLI restful API server with password and fail2ban.
 
-See official documentation for the CLI restful API : https://bitwarden.com/help/vault-management-api/
+See official documentation for the CLI restful API: https://bitwarden.com/help/vault-management-api/
 
 How does it work:
- - Running the official bitwarden CLI command : `bw serve`
+ - Running the official bitwarden CLI command: `bw serve`
  - Nginx https frontend to make secure connection between clients and restful API.
- - Nginx authentication for clients. There is 2 mode of authentication : read only which can only do `GET` requests and a full access which can do all `GET, PUT, POST, DELETE`
- - Fail2ban to prevent bruteforce for nginx authnetication
+ - Nginx authentication for clients. There is 2 modes of authentication: read only which can only do `GET` requests and a full access which can do all `GET, PUT, POST, DELETE`
+ - Fail2ban to prevent brute-force for nginx authentication
 
-It can be usefull:
+It can be useful:
   - To make a backup if remote Bitwarden server goes down
   - To share secrets for servers
-  - To share some passwords with newcommers without creating a new bitwarden account
+  - To share some passwords with newcomers without creating a new bitwarden account
 
 ## :warning: Notes
 
@@ -28,7 +28,7 @@ This project will not implement certbot to renew Web certificates. If no certs a
 
 ## Configuration
 
-It's recommanded to use docker compose to run this application
+It's recommended to use docker compose to run this application
 
 - Create `docker-compose.yml` file:
 ```
@@ -78,8 +78,6 @@ NGINX_FULL_ACCESS_PASS=superchangeme
 #NGINX_HOSTNAME=your.server.domain
 #NGINX_CERT=nginx-selfsigned.crt
 #NGINX_CERT_PRIVATE=nginx-selfsigned.key
-
-## NGINX Container PORT. Don't change it 
 
 ##############
 ### BW CLI ###
