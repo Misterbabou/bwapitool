@@ -29,7 +29,7 @@ function request_server {
 }
 
 function check_unlock_vault {
-  echo "[INFO] User Connected: $(bw status | jq -r .userEmail)"
+  echo "[INFO] User Connected: $(echo $bitwarden_status | jq -r .userEmail)"
   if [ -n "$BW_CLIENTID" ]; then
     echo "[WARNING] You are already connected: BW_CLIENTID can be deleted from your env variables"
   fi
@@ -86,7 +86,8 @@ if [ -n "$https_proxy" ]; then
   echo "Proxy: $https_proxy"
 fi
 
-bitwarden_remote_url=$(bw status | jq -r '.serverUrl')
+bitwarden_status=$(bw status)
+bitwarden_remote_url=$(echo $bitwarden_status | jq -r '.serverUrl')
 
 get_remote_server
 echo "Remote server is : $BW_REMOTE_SERVER"
