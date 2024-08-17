@@ -1,6 +1,6 @@
 #!/bin/bash
 
-script_version="2024.7.2.0 "
+script_version="2024.7.2.1 "
 
 function get_remote_server {
   if [ -n "$BW_REMOTE_SERVER" ]; then
