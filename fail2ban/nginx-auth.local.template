@@ -1,0 +1,9 @@
+[nginx-auth]
+enabled  = true
+filter   = nginx-auth
+port     = http,https
+#action   = iptables[name=HTTP, port=http, protocol=tcp]
+logpath  = /var/log/nginx/access.log
+bantime  = ${F2B_BANTIME}
+findtime = ${F2B_FINDTIME}
+maxretry = ${F2B_MAXRETRY}

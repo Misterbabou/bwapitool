@@ -1,0 +1,16 @@
+version: "3"
+services:
+  bwapitool:
+    container_name: bwapitool
+    image: misterbabou/bwapitool:latest
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - 9443:443
+    env_file: 
+      - ".env"
+    volumes:
+      - "./appdata/vault:/root/.config/Bitwarden CLI"
+      - "./appdata/log:/var/log/nginx"
+      - "./appdata/certs:/certs"

@@ -1,0 +1,98 @@
+#!/bin/bash
+
+script_version="2024.7.2.0 "
+
+function get_remote_server {
+  if [ -n "$BW_REMOTE_SERVER" ]; then
+    if [ "$bitwarden_remote_url" != "$BW_REMOTE_SERVER" ]; then
+      bw login --check --quiet
+      if [ $? -eq 0 ]; then
+        bw logout
+      fi
+      if $BW_DISABLE_EVENTS; then
+        bw config server $BW_REMOTE_SERVER --events http://127.0.0.1:9
+      else
+        bw config server $BW_REMOTE_SERVER
+      fi
+    fi
+  else
+    echo "[ERROR] ENV BW_REMOTE_SERVER is not set"
+    exit 1
+  fi
+}
+
+function request_server {
+  requete_curl=$(curl -w '%{http_code}' --connect-timeout 5 -s -o /dev/null $BW_REMOTE_SERVER)
+  if [ "$requete_curl" -ne 200 ]; then
+    echo "[WARNING] $BW_REMOTE_SERVER is not accessible"
+  fi
+}
+
+function check_unlock_vault {
+  echo "[INFO] User Connected: $(bw status | jq -r .userEmail)"
+  if [ -n "$BW_CLIENTID" ]; then
+    echo "[WARNING] You are already connected: BW_CLIENTID can be deleted from your env variables"
+  fi
+  if [ -n "$BW_CLIENTSECRET" ]; then
+    echo "[WARNING] You are already connected: BW_CLIENTSECRET can be deleted from your env variables"
+  fi
+
+  bw unlock --check --quiet
+  if [ $? -ne 0 ]; then
+    echo "[WARNING] Vault is locked"
+    echo "Use : bw unlock --raw"
+    echo "Or use API to unlock can be insecure!"
+  fi
+}
+
+function check_authentication {
+  bw login --check --quiet
+  if [ $? -ne 0 ]; then
+    if [ "$requete_curl" -eq 200 ]; then
+      if [ -z "$BW_CLIENTID" ]; then
+        echo "[ERROR] BW_CLIENTID is not set"
+        exit 1
+      fi
+      if [ -z "$BW_CLIENTSECRET" ]; then
+        echo "[ERROR] BW_CLIENTSECRET is not set"
+        exit 1
+      fi
+      bw login --apikey --raw
+      if [ $? -ne 0 ]; then
+        echo "[ERROR] BW_CLIENTID or BW_CLIENTSECRET is incorrect"
+        exit 1
+      fi
+    else
+      echo "[ERROR] You are not logged in and $BW_REMOTE_SERVER is not accessible"
+      echo "Check ENV BW_REMOTE_SERVER or SET ENV HTTPS_PROXY"
+      exit 1
+    fi
+  fi
+}
+
+# ONLY https_proxy
+if [ -n "$HTTPS_PROXY" ]; then
+  if [ -z "$https_proxy" ]; then
+    export https_proxy="$HTTPS_PROXY"
+  fi
+fi
+unset HTTP_PROXY
+unset http_proxy
+unset HTTPS_PROXY
+
+echo "bwapitool Version: $script_version"
+echo "Bitwarden CLI Version: $(bw -v)"
+if [ -n "$https_proxy" ]; then
+  echo "Proxy: $https_proxy"
+fi
+
+bitwarden_remote_url=$(bw status | jq -r '.serverUrl')
+
+get_remote_server
+echo "Remote server is : $BW_REMOTE_SERVER"
+
+request_server
+check_authentication
+check_unlock_vault
+echo "[INFO] Launching API SERVER"
+bw serve --hostname 127.0.0.1 --port $BW_API_PORT
