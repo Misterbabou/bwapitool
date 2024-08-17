@@ -128,6 +128,10 @@ bwapitool    | bw unlock --raw
 bwapitool    | Or use API to unlock can be insecure!
 bwapitool    | [INFO] Launching API SERVER
 ```
+- Ensure rights for the .env file are restrected only to your user
+```
+chmod 600 .env
+``` 
 
 - Unlock the vault the most secure way
 ```
@@ -184,4 +188,4 @@ sudo docker exec -it bwapitool fail2ban-client banned
 Unban:
 ```
 sudo docker exec -it bwapitool fail2ban-client set nginx-auth unbanip <IP>
-``
+```
