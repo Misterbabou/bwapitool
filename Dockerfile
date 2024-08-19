@@ -36,7 +36,7 @@ COPY fail2ban/nginx-auth.conf /etc/fail2ban/filter.d/nginx-auth.conf
 COPY fail2ban/nginx-auth.local.template /etc/fail2ban/jail.d/nginx-auth.local.template
 RUN rm /etc/fail2ban/jail.d/defaults-debian.conf 
 # Update the fail2ban.conf
-RUN sed -i 's#^logtarget = .*#logtarget = /var/log/nginx/fail2ban.log#' /etc/fail2ban/fail2ban.conf
+RUN sed -i 's#^logtarget = .*#logtarget = /proc/1/fd/1#' /etc/fail2ban/fail2ban.conf
 RUN sed -i 's/^#allowipv6 = auto/allowipv6 = auto/' /etc/fail2ban/fail2ban.conf
 
 
