@@ -5,7 +5,7 @@ LABEL maintainer="Misterbabou"
 RUN apt-get update && apt-get install -y curl unzip jq nginx gettext-base fail2ban iptables openssl
 
 # CLI VERSION
-ARG CLI_VERSION="2024.8.1"
+ARG CLI_VERSION="2024.8.2"
 # Download Bitwarden CLI
 RUN curl -L https://github.com/bitwarden/clients/releases/download/cli-v${CLI_VERSION}/bw-linux-${CLI_VERSION}.zip -o /tmp/bw.zip
 
