@@ -116,7 +116,7 @@ NGINX_FULL_ACCESS_PASS=superchangeme
 
 > [!IMPORTANT]
 >
->ENV BW_CLIENTID and BW_CLIENTSECRET are madatory for the first docker-compose startup
+>ENV `BW_CLIENTID` and `BW_CLIENTSECRET` are madatory for the first docker-compose startup
 
 - Ensure rights for the .env file are restrected only to your user
 ```
@@ -138,13 +138,10 @@ bwapitool    | [INFO] Launching API SERVER
 ```
 sudo docker exec -it bwapitool bw unlock --raw
 ```
+Copy and paste the result in the `.env` file in this variable :
+`BW_SESSION="your previous command result"`
 
-Copy and paste the result in the ".env" variable and uncomment :
-BW_SESSION="your previous command result"
-
-At the point you can delete 
-BW_CLIENTID 
-BW_CLIENTSECRET
+At the point you can delete `BW_CLIENTID` and `BW_CLIENTSECRET` from `.env` file
 
 - Retart the docker-container:
 ```
@@ -178,7 +175,7 @@ curl -k -s --request POST --url https://your.server.domain:9443/sync --header 'A
 
 > [!NOTE]
 > 
->curl -k option need to be use only if you are using the self signed certificate
+>`curl -k` option need to be use only if you are using the self signed certificate
 
 ## Fail2ban debug  
 
