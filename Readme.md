@@ -22,9 +22,9 @@ It can be useful:
   - To share secrets for servers
   - To share some passwords with newcomers without creating a new bitwarden account
 
-## :warning: Notes
-
-This project will not implement certbot to renew Web certificates. If no certs are provided a self-signed certificate is automaticaly created for the SSL connection.
+> [!NOTE]
+> 
+> This project will not implement certbot to renew Web certificates. If no certs are provided a self-signed certificate is automaticaly created for the SSL connection.
 
 ## Configuration
 
@@ -114,8 +114,14 @@ NGINX_FULL_ACCESS_PASS=superchangeme
 #F2B_MAXRETRY=3
 ```
 
-:warning: Warning
-ENV BW_CLIENTID and BW_CLIENTSECRET are madatory for the first docker-compose startup
+> [!IMPORTANT]
+>
+>ENV BW_CLIENTID and BW_CLIENTSECRET are madatory for the first docker-compose startup
+
+- Ensure rights for the .env file are restrected only to your user
+```
+chmod 600 .env
+```
 
 - Launch the docker-compose for the first time
 ```
@@ -128,11 +134,6 @@ bwapitool    | bw unlock --raw
 bwapitool    | Or use API to unlock can be insecure!
 bwapitool    | [INFO] Launching API SERVER
 ```
-- Ensure rights for the .env file are restrected only to your user
-```
-chmod 600 .env
-``` 
-
 - Unlock the vault the most secure way
 ```
 sudo docker exec -it bwapitool bw unlock --raw
@@ -175,8 +176,9 @@ Exemple with sync request :
 curl -k -s --request POST --url https://your.server.domain:9443/sync --header 'Accept: application/json' --header 'X-Password: <your NGINX_FULL_ACCESS_PASS>'
 ```
 
-:warning: note
-curl -k option need to be use only if you are using the self signed certificate
+> [!NOTE]
+> 
+>curl -k option need to be use only if you are using the self signed certificate
 
 ## Fail2ban debug  
 
