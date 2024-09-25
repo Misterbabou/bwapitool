@@ -207,13 +207,12 @@ openssl genpkey -algorithm RSA -out ./clientX.key
 
 - Generate a client certificate signing request (CSR)
 ```
-openssl req -new -key ./clientX.key -out ./clientX.csr \
-    -subj "/C=US/ST=State/L=City/O=Company/OU=Dev/CN=ClientX"
+openssl req -new -key ./clientX.key -out ./clientX.csr -subj "/C=US/ST=State/L=City/O=Company/OU=Dev/CN=ClientX"
 ```
 
 - Sign the client CSR with your CA (valid for 365 days)
 ```
-openssl x509 -req -in ./clientX.csr -CA ./selfsigned-ca.crt -CAkey ./selfsigned-ca.key -CAcreateserial ./clientX.crt -days 365
+sudo openssl x509 -req -in ./clientX.csr -CA ./selfsigned-ca.crt -CAkey ./selfsigned-ca.key -CAcreateserial -out ./clientX.crt -days 365
 ```
 
 - Copy clientX.key and clientX.crt to our client making the request
