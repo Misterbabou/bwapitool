@@ -1,15 +1,12 @@
 error_log /var/log/nginx/error.log $NGINX_ERROR_LOG_LEVEL;
+map_hash_bucket_size 256;
 limit_req_zone $binary_remote_addr zone=auth_limit:10m rate=10r/s;
 limit_req_status 429;
 
-# Map the password to the access level based on the request method
-map $request_method$http_x_password $access_granted {
+# Map the CLIENTS DN to the access level based on the request method
+map $ssl_client_s_dn $access_granted {
     default 0;
-    "GET$NGINX_READ_ONLY_PASS" 1;
-    "GET$NGINX_FULL_ACCESS_PASS" 1;
-    "POST$NGINX_FULL_ACCESS_PASS" 1;
-    "PUT$NGINX_FULL_ACCESS_PASS" 1;
-    "DELETE$NGINX_FULL_ACCESS_PASS" 1;
+{{NGINX_AUTHORIZED_CLIENTS_DN_MAP}}
 }
 
 server {
@@ -21,6 +18,11 @@ server {
 
     ssl_certificate /certs/$NGINX_CERT;
     ssl_certificate_key /certs/$NGINX_CERT_PRIVATE;
+
+    # Path to your CA certificate to verify client certificates
+    ssl_client_certificate /certs/$NGINX_AUTH_CA_CERT;
+    ssl_verify_client on;  # Enable client certificate verification
+    ssl_verify_depth $NGINX_AUTH_CA_DEPTH;
 
     # Configure SSL
     ssl_protocols TLSv1.2 TLSv1.3;

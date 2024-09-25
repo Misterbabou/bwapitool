@@ -5,7 +5,7 @@ LABEL maintainer="Misterbabou"
 RUN apt-get update && apt-get install -y curl unzip jq nginx gettext-base fail2ban iptables openssl
 
 # CLI VERSION
-ARG CLI_VERSION="2024.8.2"
+ARG CLI_VERSION="2024.9.0"
 # Download Bitwarden CLI
 RUN curl -L https://github.com/bitwarden/clients/releases/download/cli-v${CLI_VERSION}/bw-linux-${CLI_VERSION}.zip -o /tmp/bw.zip
 
@@ -25,6 +25,7 @@ COPY bwapitool /usr/local/bin/
 RUN chmod +x /usr/local/bin/bwapitool
 
 COPY conf.d/reverse-proxy.conf.template /etc/nginx/conf.d/reverse-proxy.conf.template
+COPY conf.d/reverse-proxy.conf.cert-template /etc/nginx/conf.d/reverse-proxy.conf.cert-template
 RUN rm /etc/nginx/sites-enabled/default
 
 # Entrypoint
@@ -42,11 +43,16 @@ RUN sed -i 's/^#allowipv6 = auto/allowipv6 = auto/' /etc/fail2ban/fail2ban.conf
 
 # Set default environment variables
 ENV NGINX_PORT=443 \
+    NGINX_AUTH_MODE=password \
     NGINX_READ_ONLY_PASS=changeme \
     NGINX_FULL_ACCESS_PASS=superchangeme \
     NGINX_CERT=nginx-selfsigned.crt \
     NGINX_CERT_PRIVATE=nginx-selfsigned.key \
+    NGINX_AUTH_CA_CERT=selfsigned-ca.crt \
+    NGINX_AUTH_CA_DEPTH=1 \
+    NGINX_AUTHORIZED_CLIENTS_DN="CN=Client1,OU=Dev,O=Company,L=City,ST=State,C=US;CN=Client2,OU=Dev,O=Company,L=City,ST=State,C=US" \
     NGINX_HOSTNAME=your.server.domain \
+    NGINX_ERROR_LOG_LEVEL=error \
     BW_API_PORT=8087 \
     BW_REMOTE_SERVER=https://vault.bitwarden.com \
     BW_DISABLE_EVENTS=false \

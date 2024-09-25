@@ -1,4 +1,4 @@
-# BWAPITOOL : Secure restful API from bitwarden CLI
+# BWAPITOOL : Secure restful API for bitwarden CLI
 
 ---
 [![Docker Pulls](https://img.shields.io/docker/pulls/misterbabou/bwapitool.svg?logo=docker)](https://hub.docker.com/r/misterbabou/bwapitool)
@@ -7,14 +7,14 @@
 [![MIT Licensed](https://img.shields.io/github/license/Misterbabou/bwapitool.svg?logo=github&logoColor=959DA5)](https://github.com/Misterbabou/bwapitool/blob/main/LICENSE.md)
 ---
 
-BWPITOOL brings a secure docker container to host you bitwarden CLI restful API server with password and fail2ban.
+BWPITOOL brings a secure docker container to host you bitwarden CLI restful API server with password or certificate authentication and fail2ban.
 
 See official documentation for the CLI restful API: https://bitwarden.com/help/vault-management-api/
 
 How does it work:
  - Running the official bitwarden CLI command: `bw serve`
  - Nginx https frontend to make secure connection between clients and restful API.
- - Nginx authentication for clients. There is 2 modes of authentication: read only which can only do `GET` requests and a full access which can do all `GET, PUT, POST, DELETE`
+ - Nginx authentication for clients. There is 2 modes of authentication: certificate or password (read only password which can only do `GET` requests and a full access password which can do all `GET, PUT, POST, DELETE`). Certificate is recommended as clients don't use same credentials.
  - Fail2ban to prevent brute-force for nginx authentication
 
 It can be useful:
@@ -65,12 +65,6 @@ services:
 ### NGINX ###
 #############
 
-## Nginx password to do GET API requests 
-NGINX_READ_ONLY_PASS=changeme
-
-## Ninx password to do all (GET, PUT, POST, DELETE) API requests
-NGINX_FULL_ACCESS_PASS=superchangeme
-
 ## Docker nginx port inside container (don't change it unless you know what your doing)
 #NGINX_PORT=443
 
@@ -78,6 +72,30 @@ NGINX_FULL_ACCESS_PASS=superchangeme
 #NGINX_HOSTNAME=your.server.domain
 #NGINX_CERT=nginx-selfsigned.crt
 #NGINX_CERT_PRIVATE=nginx-selfsigned.key
+
+## NGINX ERROR log level (crit, error, warn, notice, info, debug)
+#NGINX_ERROR_LOG_LEVEL=error
+
+## Nginx Authentication password or cert. Cert is recommended
+NGINX_AUTH_MODE=password
+
+### Password authentication:
+## Nginx password to do GET API requests
+#NGINX_READ_ONLY_PASS=changeme
+
+## Ninx password to do all (GET, PUT, POST, DELETE) API requests
+#NGINX_FULL_ACCESS_PASS=superchangeme
+
+### Cert authentication:
+## Sets the verification depth in the client certificates chain.
+#NGINX_AUTH_CA_DEPTH=1
+
+## Location of your root ca certificate
+#NGINX_AUTH_CA_CERT=selfsigned-ca.crt
+
+## List of authorized clients DN (seperated by ;)
+## Regex are suported by adding ~ for instance ~.*OU=Dev.* allow all certificate from OU=DEV
+#NGINX_AUTHORIZED_CLIENTS_DN="CN=Client1,OU=Dev,O=Company,L=City,ST=State,C=US;CN=Client2,OU=Dev,O=Company,L=City,ST=State,C=US"
 
 ##############
 ### BW CLI ###
@@ -160,7 +178,8 @@ Success result:
 
 ## Client requests:
 
-You had to had a new header X-Password to your api requests.
+### Client requests password mode:
+You need to had a new header X-Password to your api requests.
 See official documentation to forge requests: https://bitwarden.com/help/vault-management-api/
 
 Exemple for search an item with "test" in it:
@@ -171,6 +190,42 @@ curl -k -s --request GET --url https://your.server.domain:9443/list/object/items
 Exemple with sync request :
 ```
 curl -k -s --request POST --url https://your.server.domain:9443/sync --header 'Accept: application/json' --header 'X-Password: <your NGINX_FULL_ACCESS_PASS>'
+```
+
+### Clients requests cert mode
+You need to have a client certificate and a client certificate key to authenticate.
+If you are using the default root_ca here is how you can generate a client certificate:
+
+- Go into certs volume directory
+```
+cd ./certs
+```
+- Generate the client private key
+```
+openssl genpkey -algorithm RSA -out ./clientX.key
+```
+
+- Generate a client certificate signing request (CSR)
+```
+openssl req -new -key ./clientX.key -out ./clientX.csr \
+    -subj "/C=US/ST=State/L=City/O=Company/OU=Dev/CN=ClientX"
+```
+
+- Sign the client CSR with your CA (valid for 365 days)
+```
+openssl x509 -req -in ./clientX.csr -CA ./selfsigned-ca.crt -CAkey ./selfsigned-ca.key -CAcreateserial ./clientX.crt -days 365
+```
+
+- Copy clientX.key and clientX.crt to our client making the request
+
+Exemple for search an item with "test" in it:
+```
+curl --key ./clientX.key --cert ./clientX.crt -k -s --request GET --url https://your.server.domain:9443/list/object/items?search=test --header 'Accept: application/json'
+```
+
+Exemple with sync request :
+```
+curl --key ./clientX.key --cert ./clientX.crt -k -s --request POST --url https://your.server.domain:9443/sync --header 'Accept: application/json'
 ```
 
 > [!NOTE]
