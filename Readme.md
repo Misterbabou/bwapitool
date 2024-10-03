@@ -1,4 +1,4 @@
-# BWAPITOOL : Secure restful API for bitwarden CLI
+# BWAPITOOL : Secure restful API for bitwarden CLISecure bitwarden CLI restful API certificate or password authentication
 
 ---
 [![Docker Pulls](https://img.shields.io/docker/pulls/misterbabou/bwapitool.svg?logo=docker)](https://hub.docker.com/r/misterbabou/bwapitool)
@@ -168,6 +168,7 @@ sudo docker compose up -d
 ```
 
 At this point your container should be ready to verify on computer running your container:
+### Client requests password mode:
 ```
 curl -k -s --request GET --url https://127.0.0.1:9443/status --header 'Accept: application/json' --header 'X-Password: <your NGINX_READ_ONLY_PASS>'
 ```
@@ -175,23 +176,6 @@ Success result:
 ```
 {"success":true,"data":{"object":"template","template":{"serverUrl":"https://vault.bitwarden.com","lastSync":"2024-08-17T14:58:08.659Z","userEmail":"youremail","userId":"yourid","status":"unlocked"}}}
 ```
-
-## Client requests:
-
-### Client requests password mode:
-You need to had a new header X-Password to your api requests.
-See official documentation to forge requests: https://bitwarden.com/help/vault-management-api/
-
-Exemple for search an item with "test" in it:
-```
-curl -k -s --request GET --url https://your.server.domain:9443/list/object/items?search=test --header 'Accept: application/json' --header 'X-Password: <your NGINX_READ_ONLY_PASS>'
-```
-
-Exemple with sync request :
-```
-curl -k -s --request POST --url https://your.server.domain:9443/sync --header 'Accept: application/json' --header 'X-Password: <your NGINX_FULL_ACCESS_PASS>'
-```
-
 ### Clients requests cert mode
 You need to have a client certificate and a client certificate key to authenticate.
 If you are using the default root_ca here is how you can generate a client certificate:
@@ -215,8 +199,34 @@ openssl req -new -key ./clientX.key -out ./clientX.csr -subj "/C=US/ST=State/L=C
 sudo openssl x509 -req -in ./clientX.csr -CA ./selfsigned-ca.crt -CAkey ./selfsigned-ca.key -CAcreateserial -out ./clientX.crt -days 365
 ```
 
-- Copy clientX.key and clientX.crt to our client making the request
+- Copy clientX.key and clientX.crt to your client making the request
 
+To test your vault status and your cert authentication:
+```
+curl --key ./clientX.key --cert ./clientX.crt -k -s --request GET --url https://127.0.0.1:9443/status --header 'Accept: application/json'
+```
+Success result:
+```
+{"success":true,"data":{"object":"template","template":{"serverUrl":"https://vault.bitwarden.com","lastSync":"2024-08-17T14:58:08.659Z","userEmail":"youremail","userId":"yourid","status":"unlocked"}}}
+```
+
+## Client requests:
+
+### Client requests password mode:
+You need to had a new header X-Password to your api requests.
+See official documentation to forge requests: https://bitwarden.com/help/vault-management-api/
+
+Exemple for search an item with "test" in it:
+```
+curl -k -s --request GET --url https://your.server.domain:9443/list/object/items?search=test --header 'Accept: application/json' --header 'X-Password: <your NGINX_READ_ONLY_PASS>'
+```
+
+Exemple with sync request :
+```
+curl -k -s --request POST --url https://your.server.domain:9443/sync --header 'Accept: application/json' --header 'X-Password: <your NGINX_FULL_ACCESS_PASS>'
+```
+
+### Clients requests cert mode
 Exemple for search an item with "test" in it:
 ```
 curl --key ./clientX.key --cert ./clientX.crt -k -s --request GET --url https://your.server.domain:9443/list/object/items?search=test --header 'Accept: application/json'
