@@ -1,11 +1,11 @@
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 LABEL maintainer="Misterbabou"
 
 RUN apt-get update && apt-get install -y curl unzip jq nginx gettext-base fail2ban iptables openssl
 
 # CLI VERSION
-ARG CLI_VERSION="2026.7.0"
+ARG CLI_VERSION="2026.10.1"
 # Download Bitwarden CLI
 RUN curl -L https://github.com/bitwarden/clients/releases/download/cli-v${CLI_VERSION}/bw-linux-${CLI_VERSION}.zip -o /tmp/bw.zip
 
